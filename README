@@ -1,0 +1,82 @@
+# A serverless, event-driven, scalable data processing pipeline using Amazon S3 and AWS Lambda
+
+## Introduction
+
+Many applications need to ingest data in a semi realtime fashion, and have that data processed in some way, with secondary data products generated and stored for further analysis.
+
+With the advent of S3 events, and Lambda as a serverless computing infrastructure, a simple import, load, process, export pipeline can be written very easily without the need for large fleets of EC2 servers, and without the overhead and cost of scheduling, running, and maintaining them.
+
+This article shows an example design pattern, provides a sample implementation, and works through considerations on security, scaling, and cost for building an event-driven data processing pipeline using AWS Lambda and Amazon S3.
+
+## High level architecture
+
+The following architecture diagram shows how the different AWS services interact in the pipeline. An interaction/sequence diagram shows how requests are made and in what order for data being ingested into the pipeline.
+
+### Interaction diagram
+
+## Security
+
+S3 bucket policies are used to control access to the source and target S3 buckets.
+Lambda functions invoked by S3 events are controlled via IAM policies.
+
+## Scaling and performance considerations
+
+### AWS Limits
+
+The following AWS limits are relevant in this design and need to be considered carefully.
+
+Number of effective S3 writes?
+S3 events limit?
+Lambda function invocation limit?
+
+### Scaling S3 ingestion rate
+
+As the number of objects being written to S3 increases, the number of S3 events triggers increases linearly, as does the number of Lambda function invocations.
+
+Scaling read and write operations on S3 is outside the scope of this article, but there is excellent documentation on the AWS website covering this in detail, <<url to this documentation>>
+
+Is there an implicit queuing function or do we eventually get timeouts through the pipeline. If the latter, do we need to cater for this and handle retries and exponential back-off etc?
+
+### Latency of the pipeline
+
+Latency of the pipeline as request rate increases?
+
+### Maximum object size
+
+## Considerations for CPU and memory footprint for your Lambda function
+
+## Cost
+
+A simple cost analysis for the pipeline.
+
+## Sample CloudFormation template
+
+The follow CloudFormation template will provision an implementation of the above architecture example and bootstrap a very simple processing pipeline implemented in AWS Lambda which performs a simple transform on the ingested S3 object before writing a secondary data product to a second S3 bucket.
+
+Feel free to use this as the basis for a pipeline you might write, and modify it to suit your needs.
+
+## An example use case
+
+The MARVEL virtual laboratory aims to make Mars Express radar data available to several different audiences. Mars Express data typically receives several treatments before it enters a pipeline like this. For example, corrections to the radar data is made for scattering in the ionosphere of Mars, and this is computationally expensive. Typically this kind of work is done in a high performance compute environment prior to a pipeline picking up the data. This is represented below
+
+<<Example block diagram showing how different subsystems interact with the pipeline subsystem.>>
+
+## Further ideas
+
+### Scheduled or batch driven processing
+
+This article shows how data can be ingested and processed in a semi realtime fashion. Lambda can also be scheduled to run at specific times using a familiar crontab like language.
+
+Point to AWS documentation and examples on this.
+
+### Kinesis
+
+Amazon Kinesis is a scalable realtime data streaming service. Kinesis also supports triggering Lambda functions through an event model. Lambda could be configured to poll a Kinesis stream to check for new incoming data. If new data is found, it could be loaded and processed, and the secondary data product written back out to S3 and any other data sinks such as Amazon Elasticsearch, Amazon RDS or another Amazon S3 bucket, as above.
+
+## Summary
+
+Scalable, event-driven data processing work can be done securely in AWS without the need to run large fleets of servers. Not only does this reduce the cost of running and maintaining servers and the associated software runtime environment, but it also reduces the architectural complexity of the processing pipeline. These data processing patterns can handle semi-realtime data processing needs as well as batch or scheduled processing requirements. The sample architecture CloudFormation templates should provide a useable and useful start in developing your own data processing pipelines on AWS using these techniques.
+
+## Feedback
+
+Your feedback is valuable and helps us improve our content. Please don’t hesitate to share any suggestions or errata with us at whiteadr@amazon.com
